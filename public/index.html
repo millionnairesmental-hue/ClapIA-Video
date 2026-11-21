@@ -6,35 +6,56 @@
 <title>ClapIA Video</title>
 <style>
 :root{color-scheme:dark;--bg:#0b0b10;--panel:#15151d;--border:#2a2a35;--text:#f6f6f7;--muted:#a6a6b2;--accent:#8b7cff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
-main{max-width:720px;margin:auto;padding:18px 14px 40px}.hero,.card{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:14px}
-.brand{font-size:25px;font-weight:800}.muted{color:var(--muted);font-size:14px}.credits{float:right;font-weight:700}
-label{display:block;font-size:14px;margin:12px 0 6px}textarea,select{width:100%;background:#0e0e14;color:var(--text);border:1px solid:var(--border);border-radius:12px;padding:13px;font-size:16px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{width:100%;min-height:48px;border-radius:12px;padding:10px 14px;font-size:15px;font-weight:800;cursor:pointer}.primary{border:0;background:linear-gradient(90deg,var(--accent),#6f6bff);color:#fff}
-video{width:100%;max-height:560px;border-radius:16px;background:#000;margin-top:12px}.status{margin-top:10px;color:var(--muted);font-size:14px;min-height:20px}
-.header-actions{display:flex;gap:10px;justify-content:flex-end}
-.auth-form{display:flex;gap:8px}
-.input-small{width:180px;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0e0e14;color:var(--text)}
-@media(max-width:520px){.grid{grid-template-columns:1fr}.auth-form{flex-direction:column}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
+main{max-width:720px;margin:auto;padding:18px 14px 40px}
+.hero,.card{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:14px}
+.brand{font-size:25px;font-weight:800}
+.muted{color:var(--muted);font-size:14px}
+h2{margin:0 0 4px;font-size:18px}
+label{display:block;font-size:14px;margin:12px 0 6px}
+textarea,select{width:100%;background:#0e0e14;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:13px;font-size:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{min-height:48px;border-radius:12px;padding:10px 14px;font-size:15px;font-weight:800;cursor:pointer;background:#1e1e28;border:1px solid var(--border);color:var(--text)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.primary{border:0;background:linear-gradient(90deg,var(--accent),#6f6bff);color:#fff}
+button.ghost{background:transparent}
+video{width:100%;max-height:560px;border-radius:16px;background:#000;margin-top:12px}
+.status{margin-top:10px;color:var(--muted);font-size:14px;min-height:20px}
+.status.error{color:#ff8080}
+.status.success{color:#8ee6a1}
+.header-actions{display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.credits{font-weight:700}
+.auth-form{display:flex;gap:8px;flex-wrap:wrap}
+.auth-form button{min-height:38px;width:auto;padding:8px 14px}
+.input-small{width:180px;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0e0e14;color:var(--text);font-size:14px}
+a.secondary{display:block;text-align:center;text-decoration:none;margin-top:10px;padding:14px;border-radius:12px;background:#1e1e28;border:1px solid var(--border);color:var(--text);font-weight:700}
+a.secondary:hover{border-color:var(--accent)}
+.enhance-row{display:flex;justify-content:flex-end;margin-top:8px}
+.enhance-row button{min-height:38px;width:auto;padding:8px 14px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.auth-form{flex-direction:column}.input-small{width:100%}}
 </style>
 </head>
 <body>
 <main>
 <section class="hero">
-  <div style="display:flex;justify-content:space-between;align-items:center">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
     <span class="brand">🎬 ClapIA Video</span>
     <div class="header-actions">
       <span class="credits">⚡ <span id="credits">—</span></span>
       <div id="authArea"></div>
     </div>
   </div>
-  <div class="muted" style="clear:both;margin-top:7px">Transforme une idée en vidéo IA.</div>
+  <div class="muted" style="margin-top:7px">Transforme une idée en vidéo IA.</div>
 </section>
 
 <section class="card">
   <h2>Créer une vidéo</h2>
   <label for="prompt">Ton idée</label>
-  <textarea id="prompt" placeholder="Exemple : Un homme travaille dans un immense champ au coucher du soleil, puis s'arrête et regarde le ciel avec espoir."></textarea>
+  <textarea id="prompt" rows="4" placeholder="Exemple : Un homme travaille dans un immense champ au coucher du soleil, puis s'arrête et regarde le ciel avec espoir."></textarea>
+  <div class="enhance-row">
+    <button id="enhance" class="ghost" type="button" title="Améliore ton idée avec l'IA AshnaAI">✨ Améliorer mon idée</button>
+  </div>
 
   <div class="grid">
     <div><label for="ratio">Format</label>
@@ -48,21 +69,21 @@ video{width:100%;max-height:560px;border-radius:16px;background:#000;margin-top:
   <label for="style">Style</label>
   <select id="style"><option>Cinématique réaliste</option><option>Hyperréaliste</option><option>Documentaire</option><option>Animation 3D</option></select>
 
-  <button id="generate" class="primary" style="margin-top:15px">✨ Générer la vidéo</button>
+  <button id="generate" class="primary" style="margin-top:15px;width:100%">✨ Générer la vidéo</button>
   <div id="status" class="status" aria-live="polite"></div>
 </section>
 
 <section id="output" class="card" hidden>
   <h2>Résultat</h2>
   <video id="video" controls playsinline></video>
-  <a id="download" class="secondary" style="display:block;text-align:center;text-decoration:none;margin-top:10px;padding:14px;border-radius:12px" download="clapia-video.mp4">⬇️ Ouvrir / télécharger</a>
+  <a id="download" class="secondary" download="clapia-video.mp4">⬇️ Ouvrir / télécharger</a>
 </section>
 </main>
 
 <script>
 const $ = id => document.getElementById(id);
 const promptEl=$("prompt"), ratio=$("ratio"), duration=$("duration"), style=$("style");
-const generate=$("generate"), status=$("status"), output=$("output"), video=$("video"), download=$("download"), creditsEl=$("credits");
+const generate=$("generate"), enhance=$("enhance"), statusEl=$("status"), output=$("output"), video=$("video"), download=$("download"), creditsEl=$("credits");
 const authArea=$("authArea");
 
 function authHeader(){
@@ -70,15 +91,20 @@ function authHeader(){
   return token ? { 'Authorization': 'Bearer ' + token } : {};
 }
 
+function setStatus(msg, kind){
+  statusEl.textContent = msg;
+  statusEl.className = 'status' + (kind ? ' ' + kind : '');
+}
+
 function renderAuth() {
   const token = localStorage.getItem('token');
   if (!token) {
     authArea.innerHTML = `
       <div class="auth-form">
-        <input id="email" class="input-small" placeholder="email@example.com" />
-        <input id="password" type="password" class="input-small" placeholder="Mot de passe" />
-        <button id="btnLogin" class="primary" style="width:auto;padding:8px 12px">Se connecter</button>
-        <button id="btnRegister" style="width:auto;padding:8px 12px">S'inscrire</button>
+        <input id="email" class="input-small" type="email" placeholder="email@example.com" autocomplete="email" />
+        <input id="password" type="password" class="input-small" placeholder="Mot de passe" autocomplete="current-password" />
+        <button id="btnLogin" class="primary">Se connecter</button>
+        <button id="btnRegister" class="ghost">S'inscrire</button>
       </div>
     `;
     $('#btnLogin').addEventListener('click', login);
@@ -86,7 +112,7 @@ function renderAuth() {
   } else {
     authArea.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px">
-        <button id="btnLogout" style="padding:8px 12px">Se déconnecter</button>
+        <button id="btnLogout" class="ghost" style="min-height:38px;width:auto;padding:8px 14px">Se déconnecter</button>
       </div>
     `;
     $('#btnLogout').addEventListener('click', () => { localStorage.removeItem('token'); renderAuth(); loadCredits(); });
@@ -96,35 +122,36 @@ function renderAuth() {
 async function register(){
   const email = $('#email').value.trim();
   const password = $('#password').value;
-  if(!email || !password) return alert('Email et mot de passe requis');
+  if(!email || !password) return setStatus('Email et mot de passe requis.', 'error');
   try{
     const res = await fetch('/api/register', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
     const data = await res.json();
     if(!res.ok) throw new Error(data.error||'Erreur');
     localStorage.setItem('token', data.token);
+    creditsEl.textContent = data.credits;
     renderAuth();
-    loadCredits();
-  }catch(e){alert(e.message)}
+  }catch(e){ setStatus(e.message, 'error'); }
 }
 
 async function login(){
   const email = $('#email').value.trim();
   const password = $('#password').value;
-  if(!email || !password) return alert('Email et mot de passe requis');
+  if(!email || !password) return setStatus('Email et mot de passe requis.', 'error');
   try{
     const res = await fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
     const data = await res.json();
     if(!res.ok) throw new Error(data.error||'Erreur');
     localStorage.setItem('token', data.token);
+    creditsEl.textContent = data.credits;
     renderAuth();
-    loadCredits();
-  }catch(e){alert(e.message)}
+  }catch(e){ setStatus(e.message, 'error'); }
 }
 
 async function loadCredits(){
   try{
-    const headers = Object.assign({'Content-Type':'application/json'}, authHeader());
+    const headers = Object.assign({}, authHeader());
     const res = await fetch('/api/credits', { headers });
+    if(res.status === 401){ localStorage.removeItem('token'); renderAuth(); }
     if(res.ok){
       const data = await res.json();
       creditsEl.textContent = data.credits ?? 0;
@@ -137,32 +164,57 @@ async function loadCredits(){
 renderAuth();
 loadCredits();
 
+// ✨ Améliorer l'idée avec l'IA AshnaAI
+enhance.addEventListener("click", async () => {
+  const idea = promptEl.value.trim();
+  if(idea.length < 3){ setStatus("Écris d'abord une idée à améliorer."); promptEl.focus(); return }
+  enhance.disabled = true;
+  setStatus("Amélioration de ton idée avec l'IA…");
+  try{
+    const headers = Object.assign({'Content-Type':'application/json'}, authHeader());
+    const res = await fetch('/api/enhance', {
+      method:'POST', headers,
+      body: JSON.stringify({ prompt: idea, style: style.value })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Erreur');
+    promptEl.value = data.prompt;
+    setStatus("✨ Idée améliorée par l'IA. Tu peux la modifier ou générer la vidéo.", 'success');
+  }catch(err){
+    setStatus("❌ " + err.message, 'error');
+  }finally{
+    enhance.disabled = false;
+  }
+});
+
 generate.addEventListener("click", async () => {
   const idea=promptEl.value.trim();
-  let credits=Number(creditsEl.textContent)||0;
-  if(idea.length<3){status.textContent="Écris une idée de vidéo.";promptEl.focus();return}
-  if(credits<5){status.textContent="Crédits insuffisants.";return}
+  const credits=Number(creditsEl.textContent)||0;
+  if(idea.length<3){ setStatus("Écris une idée de vidéo."); promptEl.focus(); return }
+  if(credits < 5){ setStatus("Crédits insuffisants. Recharge ou connecte-toi pour récupérer tes crédits.", 'error'); return }
 
   const finalPrompt=`${idea}. Style: ${style.value}. Cinematic camera movement, natural motion, coherent subject, detailed environment, professional lighting, high visual quality, no text, no watermarks.`;
-  generate.disabled=true; status.textContent="Génération en cours… cela peut prendre un moment.";
-  output.hidden=true;
+  generate.disabled=true;
+  setStatus("Génération en cours… cela peut prendre un moment.");
 
   try{
     const headers = Object.assign({'Content-Type':'application/json'}, authHeader());
     const response=await fetch("/api/generate",{
-      method:"POST",headers,body:JSON.stringify({prompt:finalPrompt,aspect_ratio:ratio.value,duration:duration.value})
+      method:"POST",headers,body:JSON.stringify({prompt:finalPrompt,aspect_ratio:ratio.value,duration:Number(duration.value)})
     });
     const data=await response.json();
     if(!response.ok) throw new Error(data.error||"Erreur serveur");
-    // mettre à jour les crédits depuis le serveur
     if(typeof data.credits !== 'undefined') creditsEl.textContent = data.credits;
     video.src=data.videoUrl;
     download.href=data.videoUrl;
     output.hidden=false;
-    status.textContent="✅ Vidéo générée avec succès. 5 crédits utilisés.";
+    setStatus("✅ Vidéo générée avec succès.", 'success');
   }catch(err){
-    status.textContent="❌ "+err.message;
-  }finally{generate.disabled=false}
+    setStatus("❌ "+err.message, 'error');
+  }finally{
+    generate.disabled=false;
+    loadCredits();
+  }
 });
 </script>
 </body>
