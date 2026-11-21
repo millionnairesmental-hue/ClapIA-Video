@@ -31,6 +31,8 @@ video{width:100%;max-height:560px;border-radius:16px;background:#000;margin-top:
 .input-small{width:180px;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0e0e14;color:var(--text);font-size:14px}
 a.secondary{display:block;text-align:center;text-decoration:none;margin-top:10px;padding:14px;border-radius:12px;background:#1e1e28;border:1px solid var(--border);color:var(--text);font-weight:700}
 a.secondary:hover{border-color:var(--accent)}
+.enhance-row{display:flex;justify-content:flex-end;margin-top:8px}
+.enhance-row button{min-height:38px;width:auto;padding:8px 14px}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.auth-form{flex-direction:column}.input-small{width:100%}}
 </style>
 </head>
@@ -51,6 +53,9 @@ a.secondary:hover{border-color:var(--accent)}
   <h2>Créer une vidéo</h2>
   <label for="prompt">Ton idée</label>
   <textarea id="prompt" rows="4" placeholder="Exemple : Un homme travaille dans un immense champ au coucher du soleil, puis s'arrête et regarde le ciel avec espoir."></textarea>
+  <div class="enhance-row">
+    <button id="enhance" class="ghost" type="button" title="Améliore ton idée avec l'IA AshnaAI">✨ Améliorer mon idée</button>
+  </div>
 
   <div class="grid">
     <div><label for="ratio">Format</label>
@@ -78,7 +83,7 @@ a.secondary:hover{border-color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const promptEl=$("prompt"), ratio=$("ratio"), duration=$("duration"), style=$("style");
-const generate=$("generate"), statusEl=$("status"), output=$("output"), video=$("video"), download=$("download"), creditsEl=$("credits");
+const generate=$("generate"), enhance=$("enhance"), statusEl=$("status"), output=$("output"), video=$("video"), download=$("download"), creditsEl=$("credits");
 const authArea=$("authArea");
 
 function authHeader(){
@@ -158,6 +163,29 @@ async function loadCredits(){
 
 renderAuth();
 loadCredits();
+
+// ✨ Améliorer l'idée avec l'IA AshnaAI
+enhance.addEventListener("click", async () => {
+  const idea = promptEl.value.trim();
+  if(idea.length < 3){ setStatus("Écris d'abord une idée à améliorer."); promptEl.focus(); return }
+  enhance.disabled = true;
+  setStatus("Amélioration de ton idée avec l'IA…");
+  try{
+    const headers = Object.assign({'Content-Type':'application/json'}, authHeader());
+    const res = await fetch('/api/enhance', {
+      method:'POST', headers,
+      body: JSON.stringify({ prompt: idea, style: style.value })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Erreur');
+    promptEl.value = data.prompt;
+    setStatus("✨ Idée améliorée par l'IA. Tu peux la modifier ou générer la vidéo.", 'success');
+  }catch(err){
+    setStatus("❌ " + err.message, 'error');
+  }finally{
+    enhance.disabled = false;
+  }
+});
 
 generate.addEventListener("click", async () => {
   const idea=promptEl.value.trim();
