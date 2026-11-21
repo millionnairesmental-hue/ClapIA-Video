@@ -23,11 +23,18 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 if (!process.env.FAL_KEY) {
   console.warn("FAL_KEY is not set. Add it to .env before generating.");
 }
+if (!process.env.ASHNA_API_KEY) {
+  console.warn("ASHNA_API_KEY is not set. POST /api/enhance will return 503 until it is configured.");
+}
 if (!isProduction && !process.env.JWT_SECRET) {
   console.warn("JWT_SECRET is not set. Using a default development secret. Set JWT_SECRET in production.");
 }
 
 fal.config({ credentials: process.env.FAL_KEY });
+
+// AshnaAI API (OpenAI-compatible Chat Completions)
+const ASHNA_API_URL = process.env.ASHNA_API_URL || "https://api.ashna.ai/v1/api";
+const ASHNA_MODEL = process.env.ASHNA_MODEL || "gpt-4o-mini";
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static("public"));
@@ -51,7 +58,7 @@ const COST_PER_VIDEO = Number(process.env.COST_PER_VIDEO) || 5;
 const ASPECT_RATIOS = ["9:16", "16:9", "1:1"];
 const DURATIONS = [5, 8, 10];
 
-// Simple per-key rate limiting for /api/generate (in-memory, per instance).
+// Simple per-key rate limiting (in-memory, per instance).
 const RATE_WINDOW_MS = 60_000;
 const RATE_MAX_REQUESTS = 5;
 const rateBuckets = new Map(); // key -> array of recent timestamps
@@ -243,6 +250,64 @@ app.get("/api/credits", optionalAuth, async (req, res) => {
   }
 });
 
+// AshnaAI — turn a rough idea into a rich cinematic video prompt.
+async function enhanceWithAshna(idea, style) {
+  const res = await fetch(`${ASHNA_API_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.ASHNA_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: ASHNA_MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Tu es un directeur artistique expert en prompts pour génération vidéo IA. " +
+            "Transforme l'idée de l'utilisateur en un prompt cinématographique riche, en anglais : " +
+            "scène détaillée, sujet cohérent, mouvement de caméra, éclairage, atmosphère. " +
+            "Réponds UNIQUEMENT avec le prompt final, sans guillemets, sans préambule, sans explication. " +
+            "Maximum 120 mots.",
+        },
+        { role: "user", content: `Idée : ${idea}\nStyle souhaité : ${style || "Cinématique réaliste"}` },
+      ],
+      temperature: 0.7,
+      max_tokens: 400,
+    }),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`AshnaAI responded ${res.status} ${detail.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("AshnaAI returned no content");
+  return text;
+}
+
+// Enhance a user idea with AshnaAI (free, rate limited, no credits charged).
+app.post("/api/enhance", optionalAuth, async (req, res) => {
+  try {
+    const { prompt, style } = req.body || {};
+    if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
+      return res.status(400).json({ error: "Idée trop courte." });
+    }
+    if (!process.env.ASHNA_API_KEY) {
+      return res.status(503).json({ error: "Amélioration IA non configurée (ASHNA_API_KEY manquante)." });
+    }
+    const key = req.user && req.user.email ? `user:${req.user.email}` : anonKeyFromReq(req);
+    if (!rateLimitAllows(`enhance:${key}`)) {
+      return res.status(429).json({ error: "Trop de demandes rapprochées. Réessaie dans une minute." });
+    }
+    const enhanced = await enhanceWithAshna(prompt.trim().slice(0, 2000), typeof style === "string" ? style : undefined);
+    res.json({ ok: true, prompt: enhanced, model: ASHNA_MODEL });
+  } catch (e) {
+    console.error("enhance error", e);
+    res.status(502).json({ error: "Erreur du service d'amélioration IA." });
+  }
+});
+
 // Generate endpoint: authenticated users are billed by email,
 // anonymous ones by IP. Debit is atomic and refunded on provider failure.
 app.post("/api/generate", optionalAuth, async (req, res) => {
@@ -309,7 +374,7 @@ app.post("/api/generate", optionalAuth, async (req, res) => {
 });
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, app: "ClapIA Video", model });
+  res.json({ ok: true, app: "ClapIA Video", model, enhanceModel: process.env.ASHNA_API_KEY ? ASHNA_MODEL : null });
 });
 
 app.listen(port, () => {
